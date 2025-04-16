@@ -2,10 +2,10 @@
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "panel",
   "name": "Nightingale Chart",
-  "id": "vijayprasadmr1-echarts-panel",
+  "id": "vijayprasadmr1-nightingale-panel",
   "info": {
     "keywords": ["panel"],
-    "description": "",
+    "description": "Custom Grafana panel plugin using ECharts (Nightingale Chart)",
     "author": {
       "name": "Vijayprasad"
     },
@@ -14,8 +14,13 @@
       "large": "img/logo.png"
     },
     "links": [],
-    "screenshots": [],
-    "version": "%VERSION%",
+   "screenshots": [
+  {
+    "path": "img/screenshot1.png",
+    "name": "Main Panel View"
+  }
+],
+    "version": "1.0.0",
     "updated": "%TODAY%"
   },
   "dependencies": {

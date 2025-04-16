@@ -1,6 +1,11 @@
 
 {
   "extends": "./.config/tsconfig.json",
-  "include": ["src"]
-  
+  "include": ["src"],
+  "sourceMap": true,
+  "compilerOptions": {
+    "jsx": "react",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  }
 }

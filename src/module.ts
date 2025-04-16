@@ -56,7 +56,7 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).setPanelOption
       path: 'title',
       name: 'Chart Title',
       description: 'Set the title of the chart.',
-      defaultValue: 'Nightingale Chart',
+      defaultValue: '',
     })
     .addColorPicker({
       path: 'colorScheme',
