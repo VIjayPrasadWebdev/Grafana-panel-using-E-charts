@@ -8,6 +8,8 @@ export interface SimpleOptions {
   yFieldName: string;
   xValues: any[];
   yValues: any[];
+  xField:any,
+  yField:any,
   valid: boolean;
   message?: string;
   title:string,
