@@ -1,7 +1,7 @@
-import { PanelPlugin } from '@grafana/data';
+import { PanelPlugin,DataFrame } from '@grafana/data';
 import { SimplePanel } from './components/SimplePanel';
 import { SimpleOptions } from './types';
-import { DataFrame } from '@grafana/data';
+
 
 export interface ParsedChartData {
   xFieldName: string;
