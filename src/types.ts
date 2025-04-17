@@ -13,7 +13,21 @@ export interface SimpleOptions {
   valid: boolean;
   message?: string;
   title:string,
+  titleColor:any,
+  fieldColor:any,
   fontSize:number,
   colorScheme:any,
   fontWeight: any,
+  changeRadiussize:any,
+  innerRadius:number,
+  outerRadius:number,
+  roseType:any,
+  showLegend:any,
+  tooltipFormat:any,
+  labelFontColor:any,
+  labelFontSize:any,
+  labelPosition:any,
+  enableAnimation:any,
+  labelFontWeight:any
+  fieldColorMap?: any; 
 }

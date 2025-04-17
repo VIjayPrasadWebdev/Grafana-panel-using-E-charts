@@ -1,87 +1,9 @@
-// import React from 'react';
-// import { PanelProps } from '@grafana/data';
-// import { SimpleOptions } from 'types';
-// import { css, cx } from '@emotion/css';
-// import { Button, useStyles2, useTheme2 } from '@grafana/ui';
-// import { PanelDataErrorView } from '@grafana/runtime';
-
-// interface Props extends PanelProps<SimpleOptions> {}
-
-// const getStyles = () => {
-//   return {
-//     wrapper: css`
-//       font-family: Open Sans;
-//       position: relative;
-//     `,
-//     svg: css`
-//       position: absolute;
-//       top: 0;
-//       left: 0;
-//     `,
-//     textBox: css`
-//       position: absolute;
-//       bottom: 0;
-//       left: 0;
-//       padding: 10px;
-//     `,
-//   };
-// };
-
-// export const SimplePanel: React.FC<Props> = ({ options, data, width, height, fieldConfig, id }) => {
-//   console.log("grafana data",data);
-//   console.log("other details",fieldConfig,id);
-  
-//   console.log("options",options);
-//   console.log("styles",useStyles2(getStyles));
-  
-  
-//   const theme = useTheme2();
-//   const styles = useStyles2(getStyles);
-
-//   if (data.series.length === 0) {
-//     return <PanelDataErrorView fieldConfig={fieldConfig} panelId={id} data={data} needsStringField />;
-//   }
-
-//   return (
-//     <div
-//       className={cx(
-//         styles.wrapper,
-//         css`
-//           width: ${width}px;
-//           height: ${height}px;
-//         `
-//       )}
-//     >
-//       <Button>Example</Button>
-//      {/*   <svg
-//         className={styles.svg}
-//         width={width}
-//         height={height}
-//         xmlns="http://www.w3.org/2000/svg"
-//         xmlnsXlink="http://www.w3.org/1999/xlink"
-//         viewBox={`-${width / 2} -${height / 2} ${width} ${height}`}
-//       >
-//         <g>
-//           <circle data-testid="simple-panel-circle" style={{ fill: theme.colors.primary.main }} r={100} />
-//         </g>
-//       </svg>   */}
-
-//       <div className={styles.textBox}>
-//         {options.showSeriesCount && (
-//           <div data-testid="simple-panel-series-counter">Number of series: {data.series.length}</div>
-//         )}
-//         <div>Text option value: {options.text}</div>
-//       </div>
-//     </div>
-//   );
-// };
-
 import React, { useEffect, useRef } from 'react';
 import { PanelProps } from '@grafana/data';
 import * as echarts from 'echarts';
 import { getChartDataFromFrame } from '../chartDataParser';
 import { SimpleOptions } from '../types';
-
+import { Button, Modal } from '@grafana/ui';
 interface Props extends PanelProps<SimpleOptions> {}
 
 export const SimplePanel: React.FC<Props> = ({ data, width, height, options }) => {
@@ -101,11 +23,21 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height, options }) =
       return;
     }
 
-    // Build Nightingale-style pie data
-    const pieData = parsed.xValues.map((name, index) => ({
-      name,
-      value: parsed.yValues[index],
-    }));
+    // Convert string boolean to actual boolean for showLegend and enableAnimation
+    const showLegend = options.showLegend === 'true';
+    const enableAnimation = options.enableAnimation === 'true';
+
+    // Parse the fieldColorMap JSON string
+    const fieldColorMap = JSON.parse(options.fieldColorMap || '{}');
+
+    const pieData = parsed.xValues.map((name, index) => {
+      const color = fieldColorMap[name];
+      return {
+        name,
+        value: parsed.yValues[index],
+        itemStyle: color ? { color } : undefined,
+      };
+    });
 
     const option: echarts.EChartsOption = {
       title: {
@@ -114,22 +46,31 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height, options }) =
         textStyle: {
           fontSize: options.fontSize || 16,
           fontWeight: options.fontWeight || 'normal',
+          color: options.titleColor || '#333',
         },
       },
       tooltip: {
         trigger: 'item',
-        formatter: '{a} <br/>{b} : {c} ({d}%)',
+        formatter: (params: any) => {
+          const format = options.tooltipFormat || '{b}: {c} ({d}%)';
+          return format
+            .replace('{b}', params.name)
+            .replace('{c}', params.value)
+            .replace('{d}', params.percent?.toFixed(2) || '0');
+        },
       },
+      
       toolbox: {
-        show: true,
+        show: showLegend,
         feature: {
           mark: { show: true },
           dataView: { show: true, readOnly: false },
           restore: { show: true },
-          saveAsImage: { show: true }
-        }
+          saveAsImage: { show: true },
+        },
       },
       legend: {
+        show: showLegend,
         left: 'center',
         top: 'bottom',
         data: parsed.xValues,
@@ -138,27 +79,29 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height, options }) =
         {
           name: parsed.yFieldName,
           type: 'pie',
-          radius: [20, 140],
+          radius: [`${options.innerRadius}%`, `${options.outerRadius}%`],
           center: ['50%', '50%'],
-          roseType: 'radius',
+          roseType: options.roseType,
           itemStyle: {
             borderRadius: 5,
-            color: options.colorScheme,
           },
           label: {
-            show: true,
-            color: 'white',
-            fontSize: options.fontSize || 16,
+            show: showLegend,
+            color: options.labelFontColor || 'white',
+            fontSize: options.labelFontSize || 12,
             fontWeight: options.fontWeight,
+            position: options.labelPosition || 'outside',
           },
           emphasis: {
             label: {
-              show: true,
+              show: showLegend,
+              fontWeight: options.fontWeight,
             },
           },
           data: pieData,
         },
       ],
+      animation: enableAnimation, // Enable animation based on user input
     };
 
     chart.setOption(option);
@@ -166,5 +109,22 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height, options }) =
     return () => chart.dispose();
   }, [data, width, height, options]);
 
-  return <div ref={chartRef} style={{ width, height }} />;
+  return <main>
+<div ref={chartRef} style={{ width, height }}>
+
+  </div>
+  <Button>Top 10 values</Button>
+  <Modal title="title" isOpen={false}>
+  <div>Some body</div>
+  <Modal.ButtonRow>
+    <Button variant="secondary" fill="outline">
+      Cancel
+    </Button>
+    <Button>Save</Button>
+  </Modal.ButtonRow>
+</Modal>
+  </main> 
+  
 };
+
+
