@@ -9,6 +9,8 @@ export interface ParsedChartData {
   yValues: any[];
   valid: boolean;
   message?: string;
+  allFieldNames?: string[]; // for Sankey
+  rows?: any[][];           // for Sankey
 }
 
 export function getChartDataFromFrame(series: DataFrame, options: SimpleOptions): ParsedChartData {
@@ -26,12 +28,24 @@ export function getChartDataFromFrame(series: DataFrame, options: SimpleOptions)
   const xField = series.fields.find((field) => field.name === options.xField) || series.fields[0];
   const yField = series.fields.find((field) => field.name === options.yField) || series.fields[1];
 
+  const xValues = xField.values.toArray();
+  const yValues = yField.values.toArray();
+
+  // For Sankey (collect all fields as row-wise data)
+  const allFieldNames = series.fields.map((f) => f.name);
+  const rowCount = series.fields[0].values.length;
+  const rows = Array.from({ length: rowCount }, (_, i) =>
+    series.fields.map((f) => f.values.get(i))
+  );
+
   return {
     xFieldName: xField.name,
     yFieldName: yField.name,
-    xValues: xField.values.toArray(),
-    yValues: yField.values.toArray(),
+    xValues,
+    yValues,
     valid: true,
+    allFieldNames,
+    rows,
   };
 }
 
@@ -172,6 +186,19 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).setPanelOption
         options: [
           { label: 'Yes', value: 'true' },
           { label: 'No', value: 'false' },
+        ],
+      },
+    })
+    .addRadio({
+      path: 'chartType',
+      name: 'Chart Type',
+      description: 'Choose which chart to display',
+      defaultValue: 'Nightingale',
+      settings: {
+        options: [
+          { label: 'Nightingale', value: 'Nightingale' },
+          { label: 'SemiDonut', value: 'SemiDonut' },
+          { label: 'customChart', value: 'customChart' },
         ],
       },
     });

@@ -30,4 +30,5 @@ export interface SimpleOptions {
   enableAnimation:string,
   labelFontWeight:string,
   fieldColorMap?: any; 
+  chartType:string
 }
