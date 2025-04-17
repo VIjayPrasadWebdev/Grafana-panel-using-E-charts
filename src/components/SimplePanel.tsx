@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { PanelProps } from '@grafana/data';
 import * as echarts from 'echarts';
 import { getChartDataFromFrame } from '../chartDataParser';
@@ -7,7 +7,17 @@ import { Button, Modal } from '@grafana/ui';
 interface Props extends PanelProps<SimpleOptions> {}
 
 export const SimplePanel: React.FC<Props> = ({ data, width, height, options }) => {
+ let [openModel,handleModel]=useState(false)
   const chartRef = useRef<HTMLDivElement>(null);
+
+  const series = data.series[0];
+  const fields = series.fields;
+
+  // Convert data into row-based format
+  const numRows = fields[0].values.length;
+  const rows = Array.from({ length: numRows }, (_, rowIndex) => {
+    return fields.map(field => field.values.get(rowIndex));
+  });
 
   useEffect(() => {
     if (!chartRef.current || data.series.length === 0) return;
@@ -23,11 +33,11 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height, options }) =
       return;
     }
 
-    // Convert string boolean to actual boolean for showLegend and enableAnimation
+   
     const showLegend = options.showLegend === 'true';
     const enableAnimation = options.enableAnimation === 'true';
 
-    // Parse the fieldColorMap JSON string
+  
     const fieldColorMap = JSON.parse(options.fieldColorMap || '{}');
 
     const pieData = parsed.xValues.map((name, index) => {
@@ -101,7 +111,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height, options }) =
           data: pieData,
         },
       ],
-      animation: enableAnimation, // Enable animation based on user input
+      animation: enableAnimation,
     };
 
     chart.setOption(option);
@@ -109,19 +119,35 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height, options }) =
     return () => chart.dispose();
   }, [data, width, height, options]);
 
+  function toggleModel()
+  {
+ handleModel(!openModel)
+  }
   return <main>
 <div ref={chartRef} style={{ width, height }}>
 
   </div>
-  <Button>Top 10 values</Button>
-  <Modal title="title" isOpen={false}>
-  <div>Some body</div>
-  <Modal.ButtonRow>
-    <Button variant="secondary" fill="outline">
-      Cancel
-    </Button>
-    <Button>Save</Button>
-  </Modal.ButtonRow>
+  <Button onClick={toggleModel}>Get the data</Button>
+  <Modal title="Grafana Metrics Data" isOpen={openModel} onDismiss={()=>handleModel(false)}>
+  <div>
+     
+     
+      <div style={{ display: 'flex', fontWeight: 'bold', borderBottom: '1px solid #ccc', padding: '8px 0' }}>
+        {fields.map((field, i) => (
+          <div key={i} style={{ flex: 1 }}>{field.name}</div>
+        ))}
+      </div>
+
+     
+      {rows.map((row, rowIndex) => (
+        <div key={rowIndex} style={{ display: 'flex', padding: '6px 0', borderBottom: '1px solid #eee' }}>
+          {row.map((cell, cellIndex) => (
+            <div key={cellIndex} style={{ flex: 1 }}>{String(cell)}</div>
+          ))}
+        </div>
+      ))}
+    </div>
+ 
 </Modal>
   </main> 
   

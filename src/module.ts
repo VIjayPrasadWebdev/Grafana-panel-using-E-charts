@@ -85,7 +85,7 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).setPanelOption
       path: 'fieldColor',
       name: 'Field Color',
       description: 'Global color override for the chart segments.',
-      defaultValue: '#333',
+      defaultValue: 'white',
     })
     .addTextInput({
       path: 'fieldColorMap',
@@ -104,7 +104,7 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).setPanelOption
       path: 'outerRadius',
       name: 'Outer Radius (%)',
       description: 'Outer radius as percentage of chart size',
-      defaultValue: 140,
+      defaultValue: 100,
       settings: { min: 0 },
     })
     .addRadio({
@@ -141,7 +141,7 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).setPanelOption
       path: 'labelFontColor',
       name: 'Label Font Color',
       description: 'Hex or named color for labels.',
-      defaultValue: '#000000',
+      defaultValue: 'white',
     })
     .addNumberInput({
       path: 'labelFontSize',
